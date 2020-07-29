@@ -52,6 +52,7 @@ public class BruteCollinearPoints {
     }
 
     public static void main(String[] args) {
+	long startTime = System.nanoTime();
 
 	In in = new In(args[0]); // input file
 	int n = in.readInt(); // n points
@@ -78,6 +79,10 @@ public class BruteCollinearPoints {
 	    System.out.println(s.toString());
 	}
 	StdDraw.show();
+	
+	long endTime = System.nanoTime();
+	double totalTime = (double) (endTime - startTime);
+	System.out.println("Runtime: " + totalTime/1000000000 + " s");
     }
     
     /**
