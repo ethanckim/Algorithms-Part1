@@ -43,18 +43,18 @@ public class FastCollinearPoints {
 
 	    // store points that have the same slope on ArrayList sameSlopes.
 	    ArrayList<Point> sameSlopes = new ArrayList<Point>();
-	    double currentSlope;
-	    double prevSlope = Double.NEGATIVE_INFINITY;
+	    double currentSlope = Double.NEGATIVE_INFINITY;
+	    double nextSlope;
 	    for (int i = 1; i < pointsCopy.length; i++) {
-		currentSlope = p.slopeTo(pointsCopy[i]);
-		if (currentSlope != prevSlope) {
+		nextSlope = p.slopeTo(pointsCopy[i]);
+		if (currentSlope != nextSlope) {
 		    // check if 4+ points have the same slope, then add line seg to arraylist.
 		    addCollinearLineSegment(sameSlopes, p, minPointsFound, maxPointsFound,
 			    colLineSegList);
 		    sameSlopes.clear();
 		}
 		sameSlopes.add(pointsCopy[i]);
-		prevSlope = currentSlope;
+		currentSlope = nextSlope;
 	    }
 	    addCollinearLineSegment(sameSlopes, p, minPointsFound, maxPointsFound, colLineSegList);
 	}
