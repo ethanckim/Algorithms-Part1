@@ -18,17 +18,23 @@ public class FastCollinearPoints {
 	// check corner cases
 	validateInput(points);
 
-	// an ArrayList to store collinear linesegments. Dynamic capacity & can find
-	// size.
+	// copy points array to avoid mutating original's values,
+	// especially in the upcomming for loop.
+	Point[] pointsCopy = Arrays.copyOf(points, points.length);
+
+	// check for duplicate points
+	Arrays.sort(pointsCopy);
+	for (int i = 0; i < pointsCopy.length - 1; i++) {
+	    if (pointsCopy[i].compareTo(pointsCopy[i + 1]) == 0)
+		throw new IllegalArgumentException("No two points in the array can be the same");
+	}
+
+	// ArrayList to store collinear linesegments. Dynamic capacity & can find size.
 	ArrayList<LineSegment> colLineSegList = new ArrayList<LineSegment>();
 	// to avoid duplicate linesegments, store already found
 	// min points of line segments & slopes
 	ArrayList<Point> minPointsFound = new ArrayList<Point>();
-	ArrayList<Double> slopesFound = new ArrayList<Double>();
-
-	// copy points array to avoid mutating original's values,
-	// especially in the upcomming for loop.
-	Point[] pointsCopy = Arrays.copyOf(points, points.length);
+	ArrayList<Point> maxPointsFound = new ArrayList<Point>();
 
 	for (Point p : points) {
 
@@ -37,20 +43,20 @@ public class FastCollinearPoints {
 
 	    // store points that have the same slope on ArrayList sameSlopes.
 	    ArrayList<Point> sameSlopes = new ArrayList<Point>();
-	    double currentSlope = p.slopeTo(pointsCopy[1]);
-	    double nextSlope = p.slopeTo(pointsCopy[2]);
-	    for (int i = 2; i < pointsCopy.length; i++) {
-		sameSlopes.add(pointsCopy[i - 1]);
-		if (currentSlope != nextSlope) {
+	    double currentSlope;
+	    double prevSlope = Double.NEGATIVE_INFINITY;
+	    for (int i = 1; i < pointsCopy.length; i++) {
+		currentSlope = p.slopeTo(pointsCopy[i]);
+		if (currentSlope != prevSlope) {
 		    // check if 4+ points have the same slope, then add line seg to arraylist.
-		    addCollinearLineSegment(sameSlopes, p, currentSlope, minPointsFound, slopesFound, colLineSegList);
+		    addCollinearLineSegment(sameSlopes, p, minPointsFound, maxPointsFound,
+			    colLineSegList);
 		    sameSlopes.clear();
 		}
-		currentSlope = nextSlope;
-		if (i + 1 < pointsCopy.length)
-		    nextSlope = p.slopeTo(pointsCopy[i + 1]);
+		sameSlopes.add(pointsCopy[i]);
+		prevSlope = currentSlope;
 	    }
-	    addCollinearLineSegment(sameSlopes, p, currentSlope, minPointsFound, slopesFound, colLineSegList);
+	    addCollinearLineSegment(sameSlopes, p, minPointsFound, maxPointsFound, colLineSegList);
 	}
 
 	colLineSeg = colLineSegList.toArray(new LineSegment[colLineSegList.size()]);
@@ -109,13 +115,6 @@ public class FastCollinearPoints {
 	for (Point p : points)
 	    if (p == null)
 		throw new IllegalArgumentException("Point(s) given in the array argument cannot be null");
-
-	for (int i = 0; i < points.length; i++) {
-	    for (int j = i + 1; j < points.length; j++) {
-		if (points[i].compareTo(points[j]) == 0)
-		    throw new IllegalArgumentException("No two points in the array can be the same");
-	    }
-	}
     }
 
     /**
@@ -123,19 +122,19 @@ public class FastCollinearPoints {
      *                       the slope each point makes with p
      * @param p              the point in reference. All slopes are based off of
      *                       point p in a given looping interval
-     * @param slopeKey       the slope of the collinear line point p and the points
-     *                       in the sameSlopes array make
-     * @param minPointsFound the arraylist which stores the minimum points already
-     *                       found. Use with slopesFound to avoid duplicate
-     *                       collinear lines
-     * @param slopesFound    the arraylist which stores the slope values already
-     *                       found. Use with minPointsFound to avoid duplicate
-     *                       collinear lines
+     * @param minPointsFound the arraylist which stores the minimum points of each
+     *                       collinear line already found (based on natural order).
+     *                       Use with maxPointsFound to avoid duplicate collinear
+     *                       lines
+     * @param maxPointsFound the arraylist which stores the maximum points of each
+     *                       collinear line already found (based on natural order).
+     *                       Use with minPointsFound to avoid duplicate collinear
+     *                       lines
      * @param colLineSegList the arraylist which stores the found collinear lines
      * 
      */
-    private void addCollinearLineSegment(ArrayList<Point> sameSlopes, Point p, double slopeKey,
-	    ArrayList<Point> minPointsFound, ArrayList<Double> slopesFound, ArrayList<LineSegment> colLineSegList) {
+    private void addCollinearLineSegment(ArrayList<Point> sameSlopes, Point p, ArrayList<Point> minPointsFound,
+	    ArrayList<Point> maxPointsFound, ArrayList<LineSegment> colLineSegList) {
 	// reject less then 3 points
 	if (sameSlopes.size() < 3)
 	    return;
@@ -147,11 +146,11 @@ public class FastCollinearPoints {
 
 	// check if this line segment is already recorded
 	for (int i = 0; i < minPointsFound.size(); i++) {
-	    if (minPointsFound.get(i).compareTo(minPoint) == 0 && slopesFound.get(i).compareTo(slopeKey) == 0)
+	    if (minPointsFound.get(i).compareTo(minPoint) == 0 && maxPointsFound.get(i).compareTo(maxPoint) == 0)
 		return;
 	}
 	minPointsFound.add(minPoint);
-	slopesFound.add(slopeKey);
+	maxPointsFound.add(maxPoint);
 	colLineSegList.add(new LineSegment(minPoint, maxPoint));
 
     }
