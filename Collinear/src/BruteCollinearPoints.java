@@ -10,8 +10,7 @@ import edu.princeton.cs.algs4.StdDraw;
  */
 public class BruteCollinearPoints {
 
-    private LineSegment[] connects4;
-    private ArrayList<LineSegment> connects4List;
+    private final LineSegment[] connects4;
 
     public BruteCollinearPoints(Point[] points) {
 
@@ -23,8 +22,8 @@ public class BruteCollinearPoints {
 	// Endpoints are clear during loop.
 	Arrays.sort(points);
 	
-	// initialize field values
-	connects4List = new ArrayList<LineSegment>();
+	// an ArrayList to store linesegments. Dynamic capacity & can find size
+	ArrayList<LineSegment> connects4List = new ArrayList<LineSegment>();
 
 	for (int p = 0; p < points.length - 3; p++) {
 	    for (int q = p + 1; q < points.length - 2; q++) {
@@ -48,7 +47,7 @@ public class BruteCollinearPoints {
     }
 
     public LineSegment[] segments() {
-	return connects4;
+	return Arrays.copyOf(connects4, connects4.length);
     }
 
     public static void main(String[] args) {
